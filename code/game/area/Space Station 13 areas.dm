@@ -664,7 +664,7 @@ proc/process_ghost_teleport_locs()
 	icon_state = "pmaint"
 
 /area/maintenance/aft
-	name = "Engineering Maintenance"
+	name = "Engineering Maintenance: Deck one"
 	icon_state = "amaint"
 
 /area/maintenance/storage
