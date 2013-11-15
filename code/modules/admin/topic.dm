@@ -610,7 +610,7 @@
 
 	//JOBBAN'S INNARDS
 	else if(href_list["jobban3"])
-		if(!check_rights(R_BAN))	return
+		if(!check_rights(R_MOD,0) && !check_rights(R_ADMIN))  return
 
 		var/mob/M = locate(href_list["jobban4"])
 		if(!ismob(M))
@@ -685,6 +685,7 @@
 		if(notbannedlist.len) //at least 1 unbanned job exists in joblist so we have stuff to ban.
 			switch(alert("Temporary Ban?",,"Yes","No", "Cancel"))
 				if("Yes")
+					if(!check_rights(R_MOD,0) && !check_rights(R_BAN))  return
 					if(config.ban_legacy_system)
 						usr << "\red Your server is using the legacy banning system, which does not support temporary job bans. Consider upgrading. Aborting ban."
 						return
@@ -715,6 +716,7 @@
 					href_list["jobban2"] = 1 // lets it fall through and refresh
 					return 1
 				if("No")
+					if(!check_rights(R_BAN))  return
 					var/reason = input(usr,"Reason?","Please State Reason","") as text|null
 					if(reason)
 						var/msg
@@ -812,7 +814,7 @@
 				DB_ban_unban(ckey(key), BANTYPE_JOB_PERMA, job)
 
 	else if(href_list["newban"])
-		if(!check_rights(R_BAN))	return
+		if(!check_rights(R_MOD,0) && !check_rights(R_BAN))  return
 
 		var/mob/M = locate(href_list["newban"])
 		if(!ismob(M)) return
@@ -845,6 +847,7 @@
 				del(M.client)
 				//del(M)	// See no reason why to delete mob. Important stuff can be lost. And ban can be lifted before round ends.
 			if("No")
+				if(!check_rights(R_BAN))   return
 				var/reason = input(usr,"Reason?","reason","Griefer") as text|null
 				if(!reason)
 					return
@@ -885,7 +888,7 @@
 				unjobbanpanel()
 
 	else if(href_list["mute"])
-		if(!check_rights(R_ADMIN))	return
+		if(!check_rights(R_MOD,0) && !check_rights(R_ADMIN))  return
 
 		var/mob/M = locate(href_list["mute"])
 		if(!ismob(M))	return
@@ -1501,7 +1504,7 @@
 		usr.client.cmd_admin_direct_narrate(M)
 
 	else if(href_list["subtlemessage"])
-		if(!check_rights(R_ADMIN))	return
+		if(!check_rights(R_MOD,0) && !check_rights(R_ADMIN))  return
 
 		var/mob/M = locate(href_list["subtlemessage"])
 		usr.client.cmd_admin_subtle_message(M)

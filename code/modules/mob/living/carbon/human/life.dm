@@ -97,7 +97,7 @@
 
 		handle_pain()
 
-//		handle_medical_side_effects()
+		handle_medical_side_effects()
 
 	handle_stasis_bag()
 
@@ -376,6 +376,13 @@
 
 		if(breath)
 			loc.assume_air(breath)
+
+			//spread some viruses while we are at it
+			if (virus2.len > 0)
+				if (get_infection_chance(src) && prob(20))
+//					log_debug("[src] : Exhaling some viruses")
+					for(var/mob/living/carbon/M in view(1,src))
+						src.spread_disease_to(M)
 
 
 	proc/get_breath_from_internal(volume_needed)
@@ -1173,6 +1180,8 @@
 			if(healths)		healths.icon_state = "health7"	//DEAD healthmeter
 		else
 			sight &= ~(SEE_TURFS|SEE_MOBS|SEE_OBJS)
+			see_in_dark = species.darksight
+			see_invisible = see_in_dark>2 ? SEE_INVISIBLE_LEVEL_ONE : SEE_INVISIBLE_LIVING
 			if(dna)
 				switch(dna.mutantrace)
 					if("slime")
@@ -1217,40 +1226,27 @@
 						if(!druggy)		see_invisible = SEE_INVISIBLE_LIVING
 
 			if(glasses)
-				if(istype(glasses, /obj/item/clothing/glasses/meson))
-					sight |= SEE_TURFS
-					if(!druggy)
-						see_invisible = SEE_INVISIBLE_MINIMUM
-				else if(istype(glasses, /obj/item/clothing/glasses/night))
-					see_in_dark = 5
-					if(!druggy)
-						see_invisible = SEE_INVISIBLE_MINIMUM
-				else if(istype(glasses, /obj/item/clothing/glasses/thermal))
-					sight |= SEE_MOBS
-					if(!druggy)
-						see_invisible = SEE_INVISIBLE_MINIMUM
-				else if(istype(glasses, /obj/item/clothing/glasses/material))
-					sight |= SEE_OBJS
-					if(!druggy)
-						see_invisible = SEE_INVISIBLE_MINIMUM
+				var/obj/item/clothing/glasses/G = glasses
+				if(istype(G))
+					see_in_dark += G.darkness_view
+					if(G.vision_flags)
+						sight |= G.vision_flags
+						if(!druggy)
+							see_invisible = SEE_INVISIBLE_MINIMUM
 
 	/* HUD shit goes here, as long as it doesn't modify sight flags */
 	// The purpose of this is to stop xray and w/e from preventing you from using huds -- Love, Doohl
 
-				else if(istype(glasses, /obj/item/clothing/glasses/sunglasses))
-					see_in_dark = 1
-					if(istype(glasses, /obj/item/clothing/glasses/sunglasses/sechud))
-						var/obj/item/clothing/glasses/sunglasses/sechud/O = glasses
-						if(O.hud)		O.hud.process_hud(src)
-						if(!druggy)		see_invisible = SEE_INVISIBLE_LIVING
-
+				if(istype(glasses, /obj/item/clothing/glasses/sunglasses/sechud))
+					var/obj/item/clothing/glasses/sunglasses/sechud/O = glasses
+					if(O.hud)		O.hud.process_hud(src)
+					if(!druggy)		see_invisible = SEE_INVISIBLE_LIVING
 				else if(istype(glasses, /obj/item/clothing/glasses/hud))
 					var/obj/item/clothing/glasses/hud/O = glasses
 					O.process_hud(src)
 					if(!druggy)
 						see_invisible = SEE_INVISIBLE_LIVING
-				else
-					see_invisible = SEE_INVISIBLE_LIVING
+
 			else if(!seer)
 				see_invisible = SEE_INVISIBLE_LIVING
 
@@ -1377,14 +1373,15 @@
 				V.cure(src)
 
 		for(var/obj/effect/decal/cleanable/blood/B in view(1,src))
-			if(B.virus2.len && get_infection_chance(src))
+			if(B.virus2.len)
 				for (var/ID in B.virus2)
-					var/datum/disease2/disease/V = virus2[ID]
+					var/datum/disease2/disease/V = B.virus2[ID]
 					infect_virus2(src,V)
+
 		for(var/obj/effect/decal/cleanable/mucus/M in view(1,src))
-			if(M.virus2.len && get_infection_chance(src))
+			if(M.virus2.len)
 				for (var/ID in M.virus2)
-					var/datum/disease2/disease/V = virus2[ID]
+					var/datum/disease2/disease/V = M.virus2[ID]
 					infect_virus2(src,V)
 
 		for (var/ID in virus2)

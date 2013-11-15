@@ -30,6 +30,17 @@
 		T = get_turf(body)				//Where is the body located?
 		attack_log = body.attack_log	//preserve our attack logs by copying them to our ghost
 
+		if (ishuman(body))
+			var/mob/living/carbon/human/H = body
+			icon = H.stand_icon
+			overlays = H.overlays_standing
+		else
+			icon = body.icon
+			icon_state = body.icon_state
+			overlays = body.overlays
+
+		alpha = 127
+
 		gender = body.gender
 		if(body.mind && body.mind.name)
 			name = body.mind.name
@@ -51,6 +62,23 @@
 		name = capitalize(pick(first_names_male)) + " " + capitalize(pick(last_names))
 	real_name = name
 	..()
+
+
+/mob/dead/attackby(obj/item/W, mob/user)
+	if(istype(W,/obj/item/weapon/tome))
+		var/mob/dead/M = src
+		if(src.invisibility != 0)
+			M.invisibility = 0
+			user.visible_message( \
+				"\red [user] drags ghost, [M], to our plan of reality!", \
+				"\red You drag [M] to our plan of reality!" \
+			)
+		else
+			user.visible_message ( \
+				"\red [user] just tried to smash his book into that ghost!  It's not very effective", \
+				"\red You get the feeling that the ghost can't become any more visible." \
+			)
+
 
 /mob/dead/CanPass(atom/movable/mover, turf/target, height=0, air_group=0)
 	return 1
@@ -87,6 +115,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 
 /mob/dead/observer/Move(NewLoc, direct)
+	dir = direct
 	if(NewLoc)
 		loc = NewLoc
 		for(var/obj/effect/step_trigger/S in NewLoc)
