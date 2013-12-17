@@ -1,6 +1,11 @@
 // BEGIN_INTERNALS
 /*
 MAP_ICON_TYPE: 0
+LAST_COMPILE_VERSION: 501.1217
+WINDOW: code\modules\maps\frame.dm;code\world.dm
+DIR: code code\game code\game\objects\structures\crates_lockers code\game\objects\structures\stool_bed_chair_nest code\game\turfs code\modules code\modules\maps code\modules\mob\living code\modules\mob\living\carbon code\modules\mob\living\carbon\alien code\modules\mob\living\carbon\alien\humanoid code\modules\mob\living\carbon\alien\larva code\modules\mob\living\carbon\human code\modules\mob\living\carbon\metroid code\modules\mob\living\carbon\monkey code\modules\mob\living\silicon code\modules\mob\living\silicon\ai code\modules\mob\living\silicon\pai code\modules\mob\living\silicon\robot code\modules\mob\living\simple_animal code\modules\power\antimatter code\modules\power\singularity code\modules\power\singularity\particle_accelerator code\modules\reagents code\modules\recycling code\modules\research code\modules\research\xenoarchaeology code\modules\research\xenoarchaeology\artifact code\modules\research\xenoarchaeology\finds code\unused\disease2 code\unused\gamemodes code\unused\hivebot code\WorkInProgress\Cael_Aislinn\ShieldGen code\WorkInProgress\Cib\amorph code\WorkInProgress\Susan maps 
+FILE: code\world.dm
+LAST_COMPILE_TIME: 1387302499
 AUTO_FILE_DIR: OFF
 */
 // END_INTERNALS

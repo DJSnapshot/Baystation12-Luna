@@ -1,7 +1,7 @@
 /world
 	mob = /mob/new_player
 	turf = /turf/space
-	area = /area
+	area = /Frame
 	view = "15x15"
 	cache_lifespan = 0	//stops player uploaded stuff from being kept in the rsc past the current session
 
