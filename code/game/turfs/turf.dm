@@ -22,139 +22,115 @@
 	var/icon_old = null
 	var/pathweight = 1
 
-/turf/New()
-	..()
-	for(var/atom/movable/AM as mob|obj in src)
-		spawn( 0 )
-			src.Entered(AM)
-			return
-	return
-
-/turf/DblClick()
-	if(istype(usr, /mob/living/silicon/ai))
-		return move_camera_by_click()
-	if(usr.stat || usr.restrained() || usr.lying)
-		return ..()
-	return ..()
-
-/turf/Click()
-	if(!isAI(usr))
+	New()
 		..()
-
-/turf/ex_act(severity)
-	return 0
-
-
-/turf/bullet_act(var/obj/item/projectile/Proj)
-	if(istype(Proj ,/obj/item/projectile/beam/pulse))
-		src.ex_act(2)
-	..()
-	return 0
-
-/turf/bullet_act(var/obj/item/projectile/Proj)
-	if(istype(Proj ,/obj/item/projectile/bullet/gyro))
-		explosion(src, -1, 0, 2)
-	..()
-	return 0
-
-/turf/Enter(atom/movable/mover as mob|obj, atom/forget as mob|obj|turf|area)
-	if(movement_disabled && usr.ckey != movement_disabled_exception)
-		usr << "\red Movement is admin-disabled." //This is to identify lag problems
+		for(var/atom/movable/AM as mob|obj in src)
+			spawn( 0 )
+				src.Entered(AM)
+				return
 		return
-	if (!mover || !isturf(mover.loc))
-		return 1
+
+	Enter(atom/movable/mover as mob|obj, atom/forget as mob|obj|turf|area)
+		if(movement_disabled && usr.ckey != movement_disabled_exception)
+			usr << "\red Movement is admin-disabled." //This is to identify lag problems
+			return
+		if (!mover || !isturf(mover.loc))
+			return 1
 
 
-	//First, check objects to block exit that are not on the border
-	for(var/obj/obstacle in mover.loc)
-		if(!(obstacle.flags & ON_BORDER) && (mover != obstacle) && (forget != obstacle))
-			if(!obstacle.CheckExit(mover, src))
-				mover.Bump(obstacle, 1)
-				return 0
+		//First, check objects to block exit that are not on the border
+		for(var/obj/obstacle in mover.loc)
+			if(!(obstacle.flags & ON_BORDER) && (mover != obstacle) && (forget != obstacle))
+				if(!obstacle.CheckExit(mover, src))
+					mover.Bump(obstacle, 1)
+					return 0
 
-	//Now, check objects to block exit that are on the border
-	for(var/obj/border_obstacle in mover.loc)
-		if((border_obstacle.flags & ON_BORDER) && (mover != border_obstacle) && (forget != border_obstacle))
-			if(!border_obstacle.CheckExit(mover, src))
-				mover.Bump(border_obstacle, 1)
-				return 0
+		//Now, check objects to block exit that are on the border
+		for(var/obj/border_obstacle in mover.loc)
+			if((border_obstacle.flags & ON_BORDER) && (mover != border_obstacle) && (forget != border_obstacle))
+				if(!border_obstacle.CheckExit(mover, src))
+					mover.Bump(border_obstacle, 1)
+					return 0
 
-	//Next, check objects to block entry that are on the border
-	for(var/obj/border_obstacle in src)
-		if(border_obstacle.flags & ON_BORDER)
-			if(!border_obstacle.CanPass(mover, mover.loc, 1, 0) && (forget != border_obstacle))
-				mover.Bump(border_obstacle, 1)
-				return 0
+		//Next, check objects to block entry that are on the border
+		for(var/obj/border_obstacle in src)
+			if(border_obstacle.flags & ON_BORDER)
+				if(!border_obstacle.CanPass(mover, mover.loc, 1, 0) && (forget != border_obstacle))
+					mover.Bump(border_obstacle, 1)
+					return 0
 
-	//Then, check the turf itself
-	if (!src.CanPass(mover, src))
-		mover.Bump(src, 1)
+		//Then, check the turf itself
+		if (!src.CanPass(mover, src))
+			mover.Bump(src, 1)
+			return 0
+
+		//Finally, check objects/mobs to block entry that are not on the border
+		for(var/atom/movable/obstacle in src)
+			if(obstacle.flags & ~ON_BORDER)
+				if(!obstacle.CanPass(mover, mover.loc, 1, 0) && (forget != obstacle))
+					mover.Bump(obstacle, 1)
+					return 0
+		return 1 //Nothing found to block so return success!
+
+
+	Entered(atom/atom as mob|obj)
+		if(movement_disabled)
+			usr << "\red Movement is admin-disabled." //This is to identify lag problems
+			return
+
+		. = ..()
+
+		if(!istype(atom, /atom/movable))
+			return
+
+		var/atom/movable/M = atom
+
+		var/loopsanity = 100
+		if(ismob(M))
+			if(!M:lastarea)
+				M:lastarea = get_area(M.loc)
+			if(M:lastarea.has_gravity == 0)
+				inertial_drift(M)
+
+		/*
+			if(M.flags & NOGRAV)
+				inertial_drift(M)
+		*/
+
+
+
+			else if(!istype(src, /turf/space))
+				M:inertia_dir = 0
+		..()
+		var/objects = 0
+		for(var/atom/A as mob|obj|turf|area in src)
+			if(objects > loopsanity)	break
+			objects++
+			spawn( 0 )
+				if ((A && M))
+					A.HasEntered(M, 1)
+				return
+		objects = 0
+		for(var/atom/A as mob|obj|turf|area in range(1))
+			if(objects > loopsanity)	break
+			objects++
+			spawn( 0 )
+				if ((A && M))
+					A.HasProximity(M, 1)
+				return
+		return
+
+
+	ex_act(severity)
 		return 0
 
-	//Finally, check objects/mobs to block entry that are not on the border
-	for(var/atom/movable/obstacle in src)
-		if(obstacle.flags & ~ON_BORDER)
-			if(!obstacle.CanPass(mover, mover.loc, 1, 0) && (forget != obstacle))
-				mover.Bump(obstacle, 1)
-				return 0
-	return 1 //Nothing found to block so return success!
+	bullet_act(var/obj/item/projectile/Proj)
+		if(istype(Proj ,/obj/item/projectile/beam/pulse))
+			src.ex_act(2)
 
-
-/turf/Entered(atom/atom as mob|obj)
-	if(movement_disabled)
-		usr << "\red Movement is admin-disabled." //This is to identify lag problems
-		return
-	..()
-//vvvvv Infared beam stuff vvvvv
-
-	if ((atom && atom.density && !( istype(atom, /obj/effect/beam) )))
-		for(var/obj/effect/beam/i_beam/I in src)
-			spawn( 0 )
-				if (I)
-					I.hit()
-				break
-
-//^^^^^ Infared beam stuff ^^^^^
-
-	if(!istype(atom, /atom/movable))
-		return
-
-	var/atom/movable/M = atom
-
-	var/loopsanity = 100
-	if(ismob(M))
-		if(!M:lastarea)
-			M:lastarea = get_area(M.loc)
-		if(M:lastarea.has_gravity == 0)
-			inertial_drift(M)
-
-	/*
-		if(M.flags & NOGRAV)
-			inertial_drift(M)
-	*/
-
-
-
-		else if(!istype(src, /turf/space))
-			M:inertia_dir = 0
-	..()
-	var/objects = 0
-	for(var/atom/A as mob|obj|turf|area in src)
-		if(objects > loopsanity)	break
-		objects++
-		spawn( 0 )
-			if ((A && M))
-				A.HasEntered(M, 1)
-			return
-	objects = 0
-	for(var/atom/A as mob|obj|turf|area in range(1))
-		if(objects > loopsanity)	break
-		objects++
-		spawn( 0 )
-			if ((A && M))
-				A.HasProximity(M, 1)
-			return
-	return
+		if(istype(Proj ,/obj/item/projectile/bullet/gyro))
+			explosion(src, -1, 0, 2)
+		return ..()
 
 /turf/proc/is_plating()
 	return 0
