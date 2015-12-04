@@ -221,19 +221,7 @@
 	return ..()
 
 /datum/species/diona/handle_death(var/mob/living/carbon/human/H)
-
-	var/mob/living/carbon/alien/diona/S = new(get_turf(H))
-
-	if(H.mind)
-		H.mind.transfer_to(S)
-
-	for(var/mob/living/carbon/alien/diona/D in H.contents)
-		if(D.client)
-			D.loc = H.loc
-		else
-			qdel(D)
-
-	H.visible_message("<span class='danger'>[H] splits apart with a wet slithering noise!</span>")
+	H.diona_split_into_nymphs(0)
 
 /datum/species/machine
 	name = "Machine"
@@ -258,6 +246,8 @@
 	show_ssd = "flashing a 'system offline' glyph on their monitor"
 	death_message = "gives one shrill beep before falling lifeless."
 	knockout_message = "encounters a hardware fault and suddenly reboots!"
+	halloss_message = "encounters a hardware fault and suddenly reboots."
+	halloss_message_self = "ERROR: Unrecoverable machine check exception.<BR>System halted, rebooting..."
 
 	warning_low_pressure = 50
 	hazard_low_pressure = -1
@@ -266,10 +256,11 @@
 	cold_level_2 = -1
 	cold_level_3 = -1
 
-	heat_level_1 = 398.15		// Start taking damage above ~125 Degrees C
+	heat_level_1 = 500		// Gives them about 25 seconds in space before taking damage
 	heat_level_2 = 1000
 	heat_level_3 = 2000
 
+	body_temperature = null
 	passive_temp_gain = 10  // This should cause IPCs to stabilize at ~80 C in a 20 C environment.
 
 	flags = CAN_JOIN | IS_WHITELISTED | NO_BREATHE | NO_SCAN | NO_BLOOD | NO_PAIN | NO_POISON
@@ -312,3 +303,6 @@
 	H.h_style = ""
 	spawn(100)
 		if(H) H.update_hair()
+
+/datum/species/machine/sanitize_name(var/new_name)
+	return sanitizeName(new_name,allow_numbers=1)

@@ -59,9 +59,12 @@
 	var/death_sound
 	var/death_message = "seizes up and falls limp, their eyes dead and lifeless..."
 	var/knockout_message = "has been knocked unconscious!"
+	var/halloss_message = "slumps to the ground, too weak to continue fighting."
+	var/halloss_message_self = "You're in too much pain to keep going..."
 
 	// Environment tolerance/life processes vars.
 	var/reagent_tag                                   //Used for metabolizing reagents.
+	var/breath_pressure = 16                          // Minimum partial pressure safe for breathing, kPa
 	var/breath_type = "oxygen"                        // Non-oxygen gas breathed, if any.
 	var/poison_type = "phoron"                        // Poisonous air.
 	var/exhale_type = "carbon_dioxide"                // Exhaled gas type.
@@ -153,6 +156,9 @@
 	unarmed_attacks = list()
 	for(var/u_type in unarmed_types)
 		unarmed_attacks += new u_type()
+
+/datum/species/proc/sanitize_name(var/new_name)
+	return sanitizeName(new_name)
 
 /datum/species/proc/get_station_variant()
 	return name
