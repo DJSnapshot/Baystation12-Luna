@@ -31,8 +31,13 @@
 	var/tail_blend = ICON_ADD
 	var/tail_hair
 
+	var/list/hair_styles
+	var/list/facial_hair_styles
+
 	var/eye_icon = "eyes_s"
 	var/eye_icon_location = 'icons/mob/human_face.dmi'
+
+	var/organs_icon		//species specific internal organs icons
 
 	var/default_h_style = "Bald"
 	var/default_f_style = "Shaved"
@@ -180,6 +185,9 @@
 		BP_R_FOOT = list("path" = /obj/item/organ/external/foot/right)
 		)
 
+	// The basic skin colours this species uses
+	var/list/base_skin_colours
+
 	var/list/genders = list(MALE, FEMALE)
 
 	// Bump vars
@@ -193,6 +201,8 @@
 	var/list/equip_overlays = list()
 
 	var/sexybits_location	//organ tag where they are located if they can be kicked for increased pain
+
+	var/list/prone_overlay_offset = list(0, 0) // amount to shift overlays when lying
 /*
 These are all the things that can be adjusted for equipping stuff and
 each one can be in the NORTH, SOUTH, EAST, and WEST direction. Specify
@@ -457,7 +467,8 @@ The slots that you can use are found in items_clothing.dm and are the inventory 
 // Impliments different trails for species depending on if they're wearing shoes.
 /datum/species/proc/get_move_trail(var/mob/living/carbon/human/H)
 	if( H.shoes || ( H.wear_suit && (H.wear_suit.body_parts_covered & FEET) ) )
-		return /obj/effect/decal/cleanable/blood/tracks/footprints
+		var/obj/item/clothing/shoes = (H.wear_suit && (H.wear_suit.body_parts_covered & FEET)) ? H.wear_suit : H.shoes // suits take priority over shoes
+		return shoes.move_trail
 	else
 		return move_trail
 
@@ -522,3 +533,40 @@ The slots that you can use are found in items_clothing.dm and are the inventory 
 	if(appearance_flags & HAS_SKIN_TONE_SPCR)
 		return 165
 	return 220
+
+/datum/species/proc/get_hair_styles()
+	var/list/L = LAZYACCESS(hair_styles, type)
+	if(!L)
+		L = list()
+		LAZYSET(hair_styles, type, L)
+		for(var/hairstyle in GLOB.hair_styles_list)
+			var/datum/sprite_accessory/S = GLOB.hair_styles_list[hairstyle]
+			if(!(get_bodytype() in S.species_allowed))
+				continue
+			ADD_SORTED(L, hairstyle, /proc/cmp_text_asc)
+			L[hairstyle] = S
+	return L
+
+/datum/species/proc/get_facial_hair_styles(var/gender)
+	var/list/facial_hair_styles_by_species = LAZYACCESS(facial_hair_styles, type)
+	if(!facial_hair_styles_by_species)
+		facial_hair_styles_by_species = list()
+		LAZYSET(facial_hair_styles, type, facial_hair_styles_by_species)
+
+	var/list/facial_hair_style_by_gender = facial_hair_styles_by_species[gender]
+	if(!facial_hair_style_by_gender)
+		facial_hair_style_by_gender = list()
+		LAZYSET(facial_hair_styles_by_species, gender, facial_hair_style_by_gender)
+
+		for(var/facialhairstyle in GLOB.facial_hair_styles_list)
+			var/datum/sprite_accessory/S = GLOB.facial_hair_styles_list[facialhairstyle]
+			if(gender == MALE && S.gender == FEMALE)
+				continue
+			if(gender == FEMALE && S.gender == MALE)
+				continue
+			if(!(get_bodytype() in S.species_allowed))
+				continue
+			ADD_SORTED(facial_hair_style_by_gender, facialhairstyle, /proc/cmp_text_asc)
+			facial_hair_style_by_gender[facialhairstyle] = S
+
+	return facial_hair_style_by_gender

@@ -9,6 +9,7 @@
 #define SPECIES_FLAG_CAN_NAB             0x0080  // Uses the special set of grab rules.
 #define SPECIES_FLAG_NO_BLOCK            0x0100  // Unable to block or defend itself from attackers.
 #define SPECIES_FLAG_NEED_DIRECT_ABSORB  0x0200  // This species can only have their DNA taken by direct absorption.
+#define SPECIES_FLAG_NO_TANGLE           0x0400  // This species wont get tangled up in weeds
 
 // unused: 0x8000 - higher than this will overflow
 
@@ -30,6 +31,7 @@
 #define RADIATION_GLOWS                                                           0x40   // Radiation causes this character to glow.
 #define HAS_SKIN_TONE_GRAV                                                        0x80   // Skin tone selectable in chargen for grav-adapted humans (0-100)
 #define HAS_SKIN_TONE_SPCR                                                        0x100  // Skin tone selectable in chargen for spacer humans (0-165)
+#define HAS_BASE_SKIN_COLOURS                                                     0x200  // Has multiple base skin sprites to go off of
 #define HAS_A_SKIN_TONE (HAS_SKIN_TONE_NORMAL | HAS_SKIN_TONE_GRAV | HAS_SKIN_TONE_SPCR) // Species has a numeric skintone
 
 // Skin Defines

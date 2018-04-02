@@ -62,7 +62,7 @@
 
 	// Strings.
 	if(material_alteration & MATERIAL_ALTERATION_NAME)
-		name = padding_material ? "[padding_material.adjective_name] [initial(name)]" : "[material.adjective_name] [initial(name)]" //this is not perfect but it will do for now.
+		SetName(padding_material ? "[padding_material.adjective_name] [initial(name)]" : "[material.adjective_name] [initial(name)]") //this is not perfect but it will do for now.
 
 	if(material_alteration & MATERIAL_ALTERATION_DESC)
 		desc = initial(desc)
@@ -200,8 +200,7 @@
 		else
 			visible_message("[user] collapses \the [src.name].")
 			new/obj/item/roller(get_turf(src))
-			spawn(0)
-				qdel(src)
+			QDEL_IN(src, 0)
 		return
 	..()
 
@@ -224,7 +223,7 @@
 	if(istype(W,/obj/item/roller_holder))
 		var/obj/item/roller_holder/RH = W
 		if(!RH.held)
-			to_chat(user, "<span class='notice'>You collect the roller bed.</span>")
+			to_chat(user, "<span class='notice'>You collect [src].</span>")
 			src.forceMove(RH)
 			RH.held = src
 			return
@@ -233,26 +232,24 @@
 
 /obj/item/roller_holder
 	name = "roller bed rack"
-	desc = "A rack for carrying a collapsed roller bed."
+	desc = "A rack for carrying collapsed roller beds. Can also be used for carrying ironing boards."
 	icon = 'icons/obj/rollerbed.dmi'
 	icon_state = "folded"
 	var/obj/item/roller/held
 
-/obj/item/roller_holder/New()
-	..()
+/obj/item/roller_holder/Initialize()
+	. = ..()
 	held = new /obj/item/roller(src)
 
 /obj/item/roller_holder/attack_self(mob/user as mob)
-
 	if(!held)
 		to_chat(user, "<span class='notice'>The rack is empty.</span>")
 		return
 
-	to_chat(user, "<span class='notice'>You deploy the roller bed.</span>")
-	var/obj/structure/bed/roller/R = new /obj/structure/bed/roller(user.loc)
+	var/obj/structure/bed/roller/R = held
+	R.forceMove(get_turf(src))
+	to_chat(user, "<span class='notice'>You deploy [R].</span>")
 	R.add_fingerprint(user)
-	qdel(held)
-	held = null
 
 
 /obj/structure/bed/roller/proc/move_buckled()
@@ -288,6 +285,5 @@
 		if(buckled_mob)	return 0
 		visible_message("[usr] collapses \the [src.name].")
 		new/obj/item/roller(get_turf(src))
-		spawn(0)
-			qdel(src)
+		QDEL_IN(src, 0)
 		return

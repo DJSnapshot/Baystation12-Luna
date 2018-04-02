@@ -64,7 +64,7 @@
 
 /turf/simulated/floor/exoplanet/desert/fire_act(datum/gas_mixture/air, temperature, volume)
 	if((temperature > T0C + 1700 && prob(5)) || temperature > T0C + 3000)
-		name = "molten silica"
+		SetName("molten silica")
 		icon_state = "sandglass"
 		diggable = 0
 
@@ -113,6 +113,10 @@
 			else
 				user.visible_message("<span class='notice'>\The [buckled_mob] has been freed from \the [src] by \the [user].</span>")
 			unbuckle_mob()
+		else
+			busy = 0
+			to_chat(user, "<span class='warning'>You slip and fail to get out!</span>")
+			return
 
 /obj/structure/quicksand/unbuckle_mob()
 	..()
